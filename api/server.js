@@ -10,7 +10,7 @@ const app = express();
 
 // Enable CORS
 app.use(cors({
-    origin: "*", // Replace with your frontend URL
+    origin: "https://grand-hackaton-frontend.vercel.app/", // Replace with your frontend URL
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
     allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
   }));
