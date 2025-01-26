@@ -2,47 +2,57 @@ const express = require("express");
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
 // Environment variables
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
 // Signup Route
-router.post(
-  "/signup",
- 
-  async (req, res) => {
-  
+router.post('/signup', async (req, res) => {
+  const { name, email, cnic, password } = req.body;
 
-    const { username, email, password } = req.body;
-    
+  console.log('Received data:', req.body); // Log the incoming request data
 
-    try {
-      // Check if user already exists
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.status(400).json({ message: "Email is already registered" });
-      }
-
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create new user
-      const user = new User({
-        username,
-        email,
-        password: hashedPassword,
-      });
-
-      await user.save();
-
-      res.status(201).json({ message: "User created successfully" });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error" });
+  try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
     }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new user
+    const newUser = new User({
+      name,
+      email,
+      cnic,
+      generatedPassword: hashedPassword,
+    });
+
+    // Save user to the database
+    await newUser.save();
+
+    // Create a JWT token
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Send response with token and user data
+    res.status(201).json({
+      message: 'User registered successfully',
+      token,
+      user: {
+        name: newUser.name,
+        email: newUser.email,
+        cnic: newUser.cnic,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
   }
-);
+});
 
 // Login Route
 router.post(

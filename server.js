@@ -2,19 +2,22 @@ const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const authRoutes = require("../routes/authRoutes");
+const bodyParser = require('body-parser');
+const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
 
 const app = express();
 
 // Enable CORS
+app.use(bodyParser.json());
 app.use(cors({
-    origin: "https://grand-hackaton-frontend.vercel.app/", // Replace with your frontend URL
+    origin: "*", // Replace with your frontend URL
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
     allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
   }));
-  
+  app.options("*", cors()); // Allow preflight requests
+
 
 // Parse JSON request bodies
 app.use(express.json());
